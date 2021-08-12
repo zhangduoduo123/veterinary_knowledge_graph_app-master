@@ -33,9 +33,12 @@
                         <div class="form-row">
                             <div class="form-group col-md-12">
                             <p>
-                                热门搜索： <a href="#" onclick="$('#question').attr('value','北京地区2015年到2016年水产品中中兽药检出的种类有哪些？')"> 北京地区2015年到2016年水产品中中兽药检出的种类有哪些？</a> &nbsp;&nbsp;
-                                <a href="#" onclick="$('#question').attr('value','北京地区2015年到2016年水产品中中兽药检出的频次是多少？')"> 北京地区2015年到2016年水产品中中兽药检出的频次是多少？</a> &nbsp;&nbsp;
-                               &nbsp;&nbsp;
+                                热门搜索： <a href="#" onclick="$('#question').attr('value','北京2015年到2016年水产品中中兽药检出的种类个数？')"> 北京2015年到2016年水产品中中兽药检出的种类个数？</a> &nbsp;&nbsp;
+                                <a href="#" onclick="$('#question').attr('value','北京2015年到2016年水产品中中兽药检出的频次是多少？')"> 北京2015年到2016年水产品中中兽药检出的频次是多少？</a> &nbsp;&nbsp;
+                               &nbsp;&nbsp; <a href="#" onclick="$('#question').attr('value','北京2015年到2016年水产品中兽药检出毒性情况？')"> 北京2015年到2016年水产品中兽药检出毒性情况？</a> &nbsp;&nbsp;
+                                <a href="#" onclick="$('#question').attr('value','北京2015年到2016年水产品中不同兽药种类检出情况？')"> 北京2015年到2016年水产品中不同兽药种类检出情况</a> &nbsp;&nbsp;
+                                <a href="#" onclick="$('#question').attr('value','北京2015年到2016年水产品中中兽药毒性水平？')"> 北京2015年到2016年水产品中中兽药毒性水平？</a> &nbsp;&nbsp;
+
                             </p>
                             </div>
                         </div>
@@ -71,8 +74,9 @@
                         <header class="panel-heading">
                             图谱展示：
                         </header>
-                        <div class="panel-body">
-                            <div id="graph" style="width: 100%;height:600px;"></div>
+
+                         <div class="panel-body">
+                            <div id="bar" style="width: 100%;height:600px;"></div>
                         </div>
                     </section>
                 </div>
@@ -109,12 +113,16 @@
     // echarts 数据
     var data = [];
     var links = [];
+    var data1 = [];
+    var links1 = [];
 
     let set = new Set();
     for( var i = 0 ;i < ret_dict[0]['list'].length ; i++ ){
         s = ret_dict[0]['list'][i]['source']['name'];
         t = ret_dict[0]['list'][i]['target']['name'];
         rel_type = ret_dict[0]['list'][i]['type'];
+        data1.push(s);
+        links1.push(t);
 
         source_node = {};
         if(set.has(s) == false) {
@@ -141,7 +149,7 @@
 
         links.push(relation) ;
     }
-
+/*
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('graph'));
 
@@ -207,8 +215,28 @@
 	        }
 	    ]
 	};
+
+ */
 	// 使用刚指定的配置项和数据显示图表。
-	myChart.setOption(option);
+	//myChart.setOption(option);
+
+	//echarts 柱状图
+    var myChart1 = echarts.init(document.getElementById('bar'));
+
+    option = {
+    xAxis: {
+        type: 'category',
+        data: data1,
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: links1,
+        type: 'bar'
+    }]
+};
+    myChart1.setOption(option);
 </script>
 {% endif %}
 
