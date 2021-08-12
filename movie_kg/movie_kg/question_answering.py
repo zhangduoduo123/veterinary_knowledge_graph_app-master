@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import re
+
 import torch
 import torch.nn.functional as F
 from django.shortcuts import render
@@ -20,183 +22,141 @@ def question_answering(request):
 
 		word_nature = segment.seg(question)
 		print('word_nature:{}'.format(word_nature))
-		#classfication_num = chatbot_response_z(word_nature)
-		classfication_num = 1
-		print('类别：{}'.format(classfication_num))
-		# 实体识别
+		pattern = [
+			[r"^.\w+兽药检出的种类个数", ],
+			[r"\w+兽药检出的频次是多少", ],
+			[r"^.\w+兽药检出毒性情况", ],
+			[r"\w+兽药种类检出情况", ],
+			[r"^.\w+兽药残留水平", ],
+		]
 
-		# 返回格式：答案和关系图{‘answer':[], 'result':[]}
-		if classfication_num == 1:
-			word = ''
-			for term in word_nature:
-				if str(term.nature) == 'nm':
-
+		pos = -1
+		classfication_num = -1
+		for i in range(len(pattern)):
+			for x in pattern[i]:
+				index = re.search(x, question)
+				if (index):
+					pos = index.span()[0]
+					classfication_num = i
 					break
+			if (pos != -1):
+				break
+
+
+		if classfication_num == 0:
+			word = ''
+			cnt_time = 0
+			cnt_type = 0
+			for term in word_nature:
+				if str(term.nature) == 'ns':
+					city = term.word
+				elif str(term.nature) == 'm':
+					if cnt_time == 0:
+						start = term.word
+					elif cnt_time == 1:
+						end = term.word
+					cnt_time = cnt_time + 1
+				elif str(term.nature) == 'n':
+					if cnt_type == 0:
+						type = term.word
+					cnt_type = cnt_time + 1
+
 			if word == '':
 				ret_dict = []
-			ret_dict = neo4jconn.veterinary_rate('北京', '2018-01-02', '2020-01-02')
-			#ret_dict = neo4jconn.veterinary_kind('北京', '2018-01-02', '2020-01-02')
-			#ret_dict = neo4jconn.veterinary_tox('北京', '2018-01-02', '2020-01-02', '水产')
-			#ret_dict = neo4jconn.veterinary_tox2('北京', '2018-01-02', '2020-01-02', '水产')
-		    #ret_dict = neo4jconn.veterinary_res('北京', '2018-01-02', '2020-01-02', '水产')
+			ret_dict = neo4jconn.veterinary_rate(city, start, end)
+
+		elif classfication_num == 1:
+			word = ''
+			cnt_time = 0
+			cnt_type = 0
+			for term in word_nature:
+				if str(term.nature) == 'ns':
+					city = term.word
+				elif str(term.nature) == 'm':
+					if cnt_time == 0:
+						start = term.word
+					elif cnt_time == 1:
+						end = term.word
+					cnt_time = cnt_time + 1
+				elif str(term.nature) == 'n':
+					if cnt_type == 0:
+						type = term.word
+					cnt_type = cnt_time + 1
+			if word == '':
+				ret_dict = []
+
+			ret_dict = neo4jconn.veterinary_kind(city, start, end)
+		elif classfication_num == 2:
+			word = ''
+			cnt_time = 0
+			cnt_type = 0
+			for term in word_nature:
+				if str(term.nature) == 'ns':
+					city = term.word
+				elif str(term.nature) == 'm':
+					if cnt_time == 0:
+						start = term.word
+					elif cnt_time == 1:
+						end = term.word
+					cnt_time = cnt_time + 1
+				elif str(term.nature) == 'n':
+					if cnt_type == 0:
+						type = term.word
+					cnt_type = cnt_time + 1
+			if word == '':
+				ret_dict = []
+
+			ret_dict = neo4jconn.veterinary_tox2(city, start, end,type)
 
 
-		# if classfication_num == 0:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nm':
-		# 			word = movie_name_dict[term.word]
-		# 			ret_dict = neo4jconn.movie_rate(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 1:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nm':
-		# 			word = movie_name_dict[term.word]
-		# 			ret_dict = neo4jconn.movie_showtime(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 2:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nm':
-		# 			word = movie_name_dict[term.word]
-		# 			ret_dict = neo4jconn.movie_category(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 3:
-		# 	ret_dict = {}
-		# elif classfication_num == 4:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nm':
-		# 			word = movie_name_dict[term.word]
-		# 			ret_dict = neo4jconn.movie_actors(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 5:
-		# 	ret_dict = {}
-		# elif classfication_num == 6:
-		# 	name =''
-		# 	category = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			name = actor_name_dict[term.word]
-		# 		elif str(term.nature) == 'ng':
-		# 			if term.word in category_dict.keys():
-		# 				category = category_dict[term.word]
-		# 			else:
-		# 				category = term.word
-		# 		if (name != '') and (category != ''):
-		# 			break
-		# 	if (name != '') and (category != ''):
-		# 		ret_dict = neo4jconn.actor_category_movie(name, category)
-		# 	else:
-		# 		ret_dict = []
-		# elif classfication_num == 7:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			word = actor_name_dict[term.word]
-		# 			ret_dict = neo4jconn.actor_movie(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 8:
-		# 	name = ''
-		# 	rate = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			name = actor_name_dict[term.word]
-		# 		elif str(term.nature) == 'm':
-		# 			rate = term.word
-		# 		if (name != '') and (rate != ''):
-		# 			break
-		# 	if (name != '') and (rate != ''):
-		# 		ret_dict = neo4jconn.actor_gt_rate_movie(name, rate)
-		# 	else:
-		# 		ret_dict = []
-		# elif classfication_num == 9:
-		# 	name = ''
-		# 	rate = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			name = actor_name_dict[term.word]
-		# 		elif str(term.nature) == 'm':
-		# 			rate = term.word
-		# 		if (name != '') and (rate != ''):
-		# 			break
-		# 	if (name != '') and (rate != ''):
-		# 		ret_dict = neo4jconn.actor_lt_rate_movie(name, rate)
-		# 	else:
-		# 		ret_dict = []
-		# elif classfication_num == 10:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			word = actor_name_dict[term.word]
-		# 			ret_dict = neo4jconn.actor_movie_category(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict =[]
-		# elif classfication_num == 11:
-		# 	name1 = ''
-		# 	name2 = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			if name1 == '':
-		# 				name1 = actor_name_dict[term.word]
-		# 			else:
-		# 				name2 = actor_name_dict[term.word]
-		# 		if (name1 != '') and (name2 != ''):
-		# 			break
-		# 	if (name1 != '') and (name2 != ''):
-		# 		ret_dict = neo4jconn.actor_actor_movie(name1, name2)
-		# 	else:
-		# 		ret_dict = []
-		# elif classfication_num == 12:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'nnt':
-		# 			word = actor_name_dict[term.word]
-		# 			ret_dict = neo4jconn.actor_movie_count(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 13:
-		# 	ret_dict = {}
-		# elif classfication_num == 14:
-		# 	word = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'm':
-		# 			word = term.word
-		# 			ret_dict = neo4jconn.gt_rate_movie(word)
-		# 			break
-		# 	if word == '':
-		# 		ret_dict = []
-		# elif classfication_num == 15:
-		# 	rate = ''
-		# 	category = ''
-		# 	for term in word_nature:
-		# 		if str(term.nature) == 'm':
-		# 			rate = term.word
-		# 		elif str(term.nature) == 'ng':
-		# 			if term.word in category_dict.keys():
-		# 				category = category_dict[term.word]
-		# 			else:
-		# 				category = term.word
-		#
-		# 		if (rate != '') and (category != ''):
-		# 			break
-		# 	if (rate != '') and (category != ''):
-		# 		ret_dict = neo4jconn.gt_rate_category_movie(rate, category)
-		# 	else:
-		# 		ret_dict = []
+		elif classfication_num == 3:
+			word = ''
+			cnt_time = 0
+			cnt_type = 0
+			for term in word_nature:
+				if str(term.nature) == 'ns':
+					city = term.word
+				elif str(term.nature) == 'm':
+					if cnt_time == 0:
+						start = term.word
+					elif cnt_time == 1:
+						end = term.word
+					cnt_time = cnt_time + 1
+				elif str(term.nature) == 'n':
+					if cnt_type == 0:
+						type = term.word
+					cnt_type = cnt_time + 1
+			if word == '':
+				ret_dict = []
+
+			ret_dict = neo4jconn.veterinary_tox(city, start, end,type)
+
+		elif classfication_num == 4:
+			word = ''
+			cnt_time = 0
+			cnt_type = 0
+			for term in word_nature:
+				if str(term.nature) == 'ns':
+					city = term.word
+				elif str(term.nature) == 'm':
+					if cnt_time == 0:
+						start = term.word
+					elif cnt_time == 1:
+						end = term.word
+					cnt_time = cnt_time + 1
+				elif str(term.nature) == 'n':
+					if cnt_type == 0:
+						type = term.word
+					cnt_type = cnt_time + 1
+			if word == '':
+				ret_dict = []
+
+			ret_dict = neo4jconn.veterinary_res(city, start, end,type)
+
+
+
+
+
 
 		if(len(ret_dict)!=0):
 			return render(request,'question_answering.html',{'ret':ret_dict})
